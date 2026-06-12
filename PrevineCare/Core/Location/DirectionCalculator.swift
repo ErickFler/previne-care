@@ -20,12 +20,20 @@ public struct DirectionCalculator: Sendable {
         return bearing.normalizedDegrees
     }
 
+    public static func bearing(from origin: CLLocationCoordinate2D, to destination: CLLocationCoordinate2D) -> Double {
+        bearingDegrees(from: origin, to: destination)
+    }
+
+    public static func relativeAngle(targetBearing: Double, deviceHeading: Double) -> Double {
+        (targetBearing - deviceHeading).normalizedSignedDegrees
+    }
+
     public static func relativeBearingDegrees(
         from origin: CLLocationCoordinate2D,
         to destination: CLLocationCoordinate2D,
         headingDegrees: Double
     ) -> Double {
-        (bearingDegrees(from: origin, to: destination) - headingDegrees).normalizedDegrees
+        relativeAngle(targetBearing: bearingDegrees(from: origin, to: destination), deviceHeading: headingDegrees)
     }
 
     public static func nearestSafePlace(to location: CLLocationCoordinate2D, in places: [SafePlace]) -> SafePlace? {
@@ -72,5 +80,9 @@ private extension Double {
     var normalizedDegrees: Double {
         let value = truncatingRemainder(dividingBy: 360)
         return value >= 0 ? value : value + 360
+    }
+    var normalizedSignedDegrees: Double {
+        let normalized = normalizedDegrees
+        return normalized > 180 ? normalized - 360 : normalized
     }
 }

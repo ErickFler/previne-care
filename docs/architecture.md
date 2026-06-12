@@ -30,6 +30,14 @@ Caregiver-facing "blocks" are approximate labels derived from radius size. They 
 
 Address search, exact street matching, and geocoding are outside the MVP because they would introduce network or external service dependencies. Caregivers can use current location or pick a point directly on the MapKit map.
 
+## Lost Mode Demo
+
+Lost Mode is local and on-device in the MVP. `RiskEngine` and `LostPatientDetector` can create a risk alert for a possible lost state, and the caregiver chooses a configured Safe Place as the destination. That selection creates an `ActiveGuidanceSession` in `CareAppState`, which simulates caregiver-to-patient synchronization on the same device.
+
+The patient Lost Mode UI intentionally avoids maps, coordinates, forms, audio, and long instructions. It uses CoreLocation heading plus local bearing math to rotate a large guidance arrow toward the caregiver-selected destination. If location or compass signal is unreliable, the UI falls back to a neutral state and records a local `GuidanceSignalLostEvent`.
+
+Production multi-device guidance will require secure synchronization between caregiver and patient devices. That sync layer is explicitly out of scope for the local MVP.
+
 ## Apple Watch Preparation
 
 The domain models are value types and Codable where possible so they can later be shared with a Watch target. The patient actions are intentionally small commands: check in, request help, view next reminder, and show guidance.

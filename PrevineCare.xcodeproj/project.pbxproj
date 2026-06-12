@@ -30,6 +30,8 @@
 		B00000000000000000000021 /* DirectionArrowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000021 /* DirectionArrowView.swift */; };
 		B00000000000000000000022 /* PINGateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000022 /* PINGateView.swift */; };
 		B00000000000000000000023 /* LocationFormatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000023 /* LocationFormatting.swift */; };
+		B00000000000000000000024 /* PatientLostModeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000025 /* PatientLostModeView.swift */; };
+		B00000000000000000000025 /* CaregiverGuidanceDestinationPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000026 /* CaregiverGuidanceDestinationPickerView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -58,6 +60,8 @@
 		C00000000000000000000022 /* PINGateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PINGateView.swift; sourceTree = "<group>"; };
 		C00000000000000000000023 /* LocationFormatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationFormatting.swift; sourceTree = "<group>"; };
 		C00000000000000000000024 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		C00000000000000000000025 /* PatientLostModeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatientLostModeView.swift; sourceTree = "<group>"; };
+		C00000000000000000000026 /* CaregiverGuidanceDestinationPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaregiverGuidanceDestinationPickerView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -208,6 +212,7 @@
 			isa = PBXGroup;
 			children = (
 				C00000000000000000000017 /* CaregiverAlertView.swift */,
+				C00000000000000000000026 /* CaregiverGuidanceDestinationPickerView.swift */,
 			);
 			path = Alerts;
 			sourceTree = "<group>";
@@ -225,6 +230,7 @@
 			children = (
 				C00000000000000000000015 /* PatientGuidanceView.swift */,
 				C00000000000000000000016 /* PatientHomeView.swift */,
+				C00000000000000000000025 /* PatientLostModeView.swift */,
 			);
 			path = Patient;
 			sourceTree = "<group>";
@@ -359,9 +365,11 @@
 				B00000000000000000000010 /* LocalJSONStore.swift in Sources */,
 				B00000000000000000000011 /* SwiftDataModels.swift in Sources */,
 				B00000000000000000000017 /* CaregiverAlertView.swift in Sources */,
+				B00000000000000000000025 /* CaregiverGuidanceDestinationPickerView.swift in Sources */,
 				B00000000000000000000018 /* CaregiverDashboardView.swift in Sources */,
 				B00000000000000000000015 /* PatientGuidanceView.swift in Sources */,
 				B00000000000000000000016 /* PatientHomeView.swift in Sources */,
+				B00000000000000000000024 /* PatientLostModeView.swift in Sources */,
 				B00000000000000000000013 /* RemindersView.swift in Sources */,
 				B00000000000000000000014 /* SafePlacesView.swift in Sources */,
 				B00000000000000000000019 /* SettingsView.swift in Sources */,

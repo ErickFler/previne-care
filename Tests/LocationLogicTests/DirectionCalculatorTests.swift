@@ -22,6 +22,12 @@ final class DirectionCalculatorTests: XCTestCase {
         XCTAssertEqual(nearest?.name, "Near")
     }
 
+    func testRelativeAngleUsesSignedDegrees() {
+        XCTAssertEqual(DirectionCalculator.relativeAngle(targetBearing: 10, deviceHeading: 350), 20, accuracy: 0.001)
+        XCTAssertEqual(DirectionCalculator.relativeAngle(targetBearing: 350, deviceHeading: 10), -20, accuracy: 0.001)
+        XCTAssertEqual(DirectionCalculator.relativeAngle(targetBearing: 180, deviceHeading: 0), 180, accuracy: 0.001)
+    }
+
     func testLocationInsideSafePlace() {
         let origin = CLLocationCoordinate2D(latitude: 25.0, longitude: -100.0)
         let home = SafePlace(name: "Home", latitude: 25.0, longitude: -100.0, radiusMeters: 100)

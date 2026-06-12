@@ -276,3 +276,51 @@ public struct CareAlert: Identifiable, Codable, Equatable, Sendable {
         self.patientName = patientName
     }
 }
+
+public enum GuidanceSessionStatus: String, Codable, Sendable {
+    case active
+    case completed
+    case cancelled
+    case failed
+}
+
+public struct ActiveGuidanceSession: Identifiable, Codable, Equatable, Sendable {
+    public var id: UUID
+    public var patientId: UUID?
+    public var destinationSafePlaceId: UUID
+    public var destinationName: String
+    public var destinationLatitude: Double
+    public var destinationLongitude: Double
+    public var startedAt: Date
+    public var status: GuidanceSessionStatus
+    public var lastKnownDistanceMeters: Double?
+    public var lastKnownBearingDegrees: Double?
+
+    public init(
+        id: UUID = UUID(),
+        patientId: UUID? = nil,
+        destinationSafePlaceId: UUID,
+        destinationName: String,
+        destinationLatitude: Double,
+        destinationLongitude: Double,
+        startedAt: Date = Date(),
+        status: GuidanceSessionStatus = .active,
+        lastKnownDistanceMeters: Double? = nil,
+        lastKnownBearingDegrees: Double? = nil
+    ) {
+        self.id = id
+        self.patientId = patientId
+        self.destinationSafePlaceId = destinationSafePlaceId
+        self.destinationName = destinationName
+        self.destinationLatitude = destinationLatitude
+        self.destinationLongitude = destinationLongitude
+        self.startedAt = startedAt
+        self.status = status
+        self.lastKnownDistanceMeters = lastKnownDistanceMeters
+        self.lastKnownBearingDegrees = lastKnownBearingDegrees
+    }
+
+    public var destinationCoordinate: CLLocationCoordinate2D {
+        CLLocationCoordinate2D(latitude: destinationLatitude, longitude: destinationLongitude)
+    }
+}

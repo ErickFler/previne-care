@@ -36,6 +36,10 @@ final class CareAppState: ObservableObject {
         didSet { save() }
     }
 
+    @Published var activeGuidanceSession: ActiveGuidanceSession? {
+        didSet { save() }
+    }
+
     private let riskEngine = RiskEngine()
     private let lostDetector = LostPatientDetector()
     private let storageKey = "previnecare.app-state.v1"
@@ -50,6 +54,7 @@ final class CareAppState: ObservableObject {
             riskEvents = snapshot.riskEvents
             lastPatientCheckIn = snapshot.lastPatientCheckIn
             activeMode = snapshot.activeMode
+            activeGuidanceSession = snapshot.activeGuidanceSession
         }
     }
 
@@ -126,6 +131,7 @@ final class CareAppState: ObservableObject {
 
     func patientIsOkay() {
         lastPatientCheckIn = Date()
+        completeActiveGuidanceSession()
     }
 
     func patientNeedsHelp(location: LocationEvent?) async {
@@ -135,6 +141,45 @@ final class CareAppState: ObservableObject {
             riskLevel: .high,
             reasons: ["Patient pressed Need help."],
             lastLocation: location
+        )
+        riskEvents.insert(event, at: 0)
+        await LocalNotificationService.shared.notifyCaregiver(riskEvent: event, patientName: patient.name)
+    }
+
+    func startGuidance(to safePlace: SafePlace) {
+        activeGuidanceSession = ActiveGuidanceSession(
+            patientId: patient.id,
+            destinationSafePlaceId: safePlace.id,
+            destinationName: safePlace.name,
+            destinationLatitude: safePlace.latitude,
+            destinationLongitude: safePlace.longitude
+        )
+        activeMode = .patient
+    }
+
+    func updateActiveGuidance(distanceMeters: Double?, bearingDegrees: Double?) {
+        guard var session = activeGuidanceSession, session.status == .active else { return }
+        session.lastKnownDistanceMeters = distanceMeters
+        session.lastKnownBearingDegrees = bearingDegrees
+        activeGuidanceSession = session
+    }
+
+    func completeActiveGuidanceSession() {
+        updateGuidanceStatus(.completed)
+    }
+
+    func cancelActiveGuidanceSession() {
+        updateGuidanceStatus(.cancelled)
+    }
+
+    func markGuidanceSignalLost() async {
+        updateGuidanceStatus(.failed)
+        let event = RiskEvent(
+            patientID: patient.id,
+            riskScore: 70,
+            riskLevel: .high,
+            reasons: ["GuidanceSignalLostEvent", "Location or compass signal is not reliable."],
+            lastLocation: nil
         )
         riskEvents.insert(event, at: 0)
         await LocalNotificationService.shared.notifyCaregiver(riskEvent: event, patientName: patient.name)
@@ -178,6 +223,12 @@ final class CareAppState: ObservableObject {
         return Calendar.current.dateComponents([.minute], from: lastPatientCheckIn, to: Date()).minute
     }
 
+    private func updateGuidanceStatus(_ status: GuidanceSessionStatus) {
+        guard var session = activeGuidanceSession else { return }
+        session.status = status
+        activeGuidanceSession = session
+    }
+
     private func save() {
         let snapshot = AppSnapshot(
             patient: patient,
@@ -186,7 +237,8 @@ final class CareAppState: ObservableObject {
             safePlaces: safePlaces,
             riskEvents: riskEvents,
             lastPatientCheckIn: lastPatientCheckIn,
-            activeMode: activeMode
+            activeMode: activeMode,
+            activeGuidanceSession: activeGuidanceSession
         )
         LocalJSONStore.save(snapshot, key: storageKey)
     }
@@ -200,6 +252,39 @@ private struct AppSnapshot: Codable {
     var riskEvents: [RiskEvent]
     var lastPatientCheckIn: Date?
     var activeMode: CareMode
+    var activeGuidanceSession: ActiveGuidanceSession?
+
+    init(
+        patient: PatientProfile?,
+        caregiver: CaregiverProfile,
+        reminders: [Reminder],
+        safePlaces: [SafePlace],
+        riskEvents: [RiskEvent],
+        lastPatientCheckIn: Date?,
+        activeMode: CareMode,
+        activeGuidanceSession: ActiveGuidanceSession?
+    ) {
+        self.patient = patient
+        self.caregiver = caregiver
+        self.reminders = reminders
+        self.safePlaces = safePlaces
+        self.riskEvents = riskEvents
+        self.lastPatientCheckIn = lastPatientCheckIn
+        self.activeMode = activeMode
+        self.activeGuidanceSession = activeGuidanceSession
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        patient = try container.decodeIfPresent(PatientProfile.self, forKey: .patient)
+        caregiver = try container.decode(CaregiverProfile.self, forKey: .caregiver)
+        reminders = try container.decode([Reminder].self, forKey: .reminders)
+        safePlaces = try container.decode([SafePlace].self, forKey: .safePlaces)
+        riskEvents = try container.decode([RiskEvent].self, forKey: .riskEvents)
+        lastPatientCheckIn = try container.decodeIfPresent(Date.self, forKey: .lastPatientCheckIn)
+        activeMode = try container.decode(CareMode.self, forKey: .activeMode)
+        activeGuidanceSession = try container.decodeIfPresent(ActiveGuidanceSession.self, forKey: .activeGuidanceSession)
+    }
 
     static let empty = AppSnapshot(
         patient: nil,
@@ -208,6 +293,7 @@ private struct AppSnapshot: Codable {
         safePlaces: [],
         riskEvents: [],
         lastPatientCheckIn: nil,
-        activeMode: .caregiver
+        activeMode: .caregiver,
+        activeGuidanceSession: nil
     )
 }
