@@ -32,6 +32,7 @@
 		B00000000000000000000023 /* LocationFormatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000023 /* LocationFormatting.swift */; };
 		B00000000000000000000024 /* PatientLostModeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000025 /* PatientLostModeView.swift */; };
 		B00000000000000000000025 /* CaregiverGuidanceDestinationPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000026 /* CaregiverGuidanceDestinationPickerView.swift */; };
+		B00000000000000000000026 /* ReminderScheduleService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000027 /* ReminderScheduleService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -62,6 +63,7 @@
 		C00000000000000000000024 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C00000000000000000000025 /* PatientLostModeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatientLostModeView.swift; sourceTree = "<group>"; };
 		C00000000000000000000026 /* CaregiverGuidanceDestinationPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaregiverGuidanceDestinationPickerView.swift; sourceTree = "<group>"; };
+		C00000000000000000000027 /* ReminderScheduleService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderScheduleService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -178,6 +180,7 @@
 			isa = PBXGroup;
 			children = (
 				C00000000000000000000007 /* LocalNotificationService.swift */,
+				C00000000000000000000027 /* ReminderScheduleService.swift */,
 			);
 			path = Notifications;
 			sourceTree = "<group>";
@@ -359,6 +362,7 @@
 				B00000000000000000000005 /* LocationService.swift in Sources */,
 				B00000000000000000000004 /* CareModels.swift in Sources */,
 				B00000000000000000000007 /* LocalNotificationService.swift in Sources */,
+				B00000000000000000000026 /* ReminderScheduleService.swift in Sources */,
 				B00000000000000000000012 /* OnDeviceAIService.swift in Sources */,
 				B00000000000000000000009 /* LostPatientDetector.swift in Sources */,
 				B00000000000000000000008 /* RiskEngine.swift in Sources */,

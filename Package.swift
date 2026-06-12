@@ -28,6 +28,11 @@ let package = Package(
             name: "LocationLogicTests",
             dependencies: ["PrevineCareCore"],
             path: "Tests/LocationLogicTests"
+        ),
+        .testTarget(
+            name: "ReminderScheduleServiceTests",
+            dependencies: ["PrevineCareCore"],
+            path: "Tests/ReminderScheduleServiceTests"
         )
     ]
 )

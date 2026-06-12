@@ -14,9 +14,15 @@ PrevineCare uses a simple SwiftUI MVVM-style architecture.
 - `Features`: SwiftUI screens and feature view models.
 - `Shared`: reusable views, theme, and small utilities.
 
+## Theme
+
+`Shared/Theme/AppTheme.swift` centralizes the lightweight design system: primary/support/warning colors, background and surface colors, spacing, card radius, base typography, `CareCard`, `PrimaryActionButtonStyle`, and `SecondaryActionButtonStyle`. Feature screens should use these helpers instead of repeating hardcoded card/button styling.
+
 ## Data Flow
 
 Views call feature view models or local app state. Feature state calls services from `Core`. `RiskEngine` is deterministic and testable; it receives a `RiskAssessmentContext` and returns a `RiskAssessmentResult`.
+
+`CareAppState` is the local demo state container. It persists patient/caregiver data, safe places, reminder definitions, reminder occurrence overrides, risk events, help mode state, and active guidance session using the existing local JSON store.
 
 ## No External Services
 
@@ -37,6 +43,12 @@ Lost Mode is local and on-device in the MVP. `RiskEngine` and `LostPatientDetect
 The patient Lost Mode UI intentionally avoids maps, coordinates, forms, audio, and long instructions. It uses CoreLocation heading plus local bearing math to rotate a large guidance arrow toward the caregiver-selected destination. If location or compass signal is unreliable, the UI falls back to a neutral state and records a local `GuidanceSignalLostEvent`.
 
 Production multi-device guidance will require secure synchronization between caregiver and patient devices. That sync layer is explicitly out of scope for the local MVP.
+
+## Reminders
+
+Reminders are split into a definition and occurrences. `Reminder` stores title, type, instructions, start date/time, confirmation flags, and optional `RecurrenceRule`. `ReminderOccurrence` stores the status for a specific date. `ReminderScheduleService` generates occurrences on-device for one-time, daily, weekly, monthly, and selected-weekday schedules.
+
+The calendar UI is intentionally simple: selected date, previous/next day, Today, and grouped lists for pending, completed, and missed reminders.
 
 ## Apple Watch Preparation
 

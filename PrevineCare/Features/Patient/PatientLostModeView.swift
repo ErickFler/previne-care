@@ -28,9 +28,16 @@ struct PatientLostModeView: View {
                     .multilineTextAlignment(.center)
                     .minimumScaleFactor(0.8)
 
-                GuidanceArrowView(relativeAngleDegrees: relativeAngle, isSignalReliable: isSignalReliable)
-                    .frame(width: 230, height: 230)
-                    .accessibilityLabel("Guidance direction")
+                if session?.status == .active {
+                    GuidanceArrowView(relativeAngleDegrees: relativeAngle, isSignalReliable: isSignalReliable)
+                        .frame(width: 230, height: 230)
+                        .accessibilityLabel("Guidance direction")
+                } else {
+                    Image(systemName: "bell.badge.fill")
+                        .font(.system(size: 96, weight: .bold))
+                        .foregroundStyle(AppTheme.warning)
+                        .frame(width: 230, height: 230)
+                }
 
                 Text(instructionText)
                     .font(.title3.weight(.semibold))
@@ -84,7 +91,7 @@ struct PatientLostModeView: View {
     }
 
     private var titleText: String {
-        guard let session else { return "Espera en un lugar seguro" }
+        guard let session, session.status == .active else { return "Tu cuidador fue notificado" }
         return "Ve hacia \(session.destinationName)"
     }
 
@@ -112,8 +119,11 @@ struct PatientLostModeView: View {
     }
 
     private var instructionText: String {
+        guard session?.status == .active else {
+            return "Quédate en un lugar seguro."
+        }
         guard isSignalReliable, let relativeAngle else {
-            return "Espera en un lugar seguro"
+            return instructionService.unreliableSignalInstruction()
         }
         if hasNoRecentMovement {
             return instructionService.noMovementInstruction()

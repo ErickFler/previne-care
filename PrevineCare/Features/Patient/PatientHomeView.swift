@@ -38,9 +38,9 @@ struct PanicAlertView: View {
                     Label("Call my caregiver", systemImage: "phone.fill")
                         .font(.title3.bold())
                         .frame(maxWidth: .infinity, minHeight: 64)
-                        .foregroundStyle(.red)
+                        .foregroundStyle(AppTheme.destructive)
                         .background(.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.card))
                 }
 
                 if let emergencyPhone = appState.caregiver.emergencyPhone, !emergencyPhone.isEmpty {
@@ -69,7 +69,7 @@ struct PanicAlertView: View {
         }
         .padding(28)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.red)
+        .background(AppTheme.destructive)
         .ignoresSafeArea()
     }
 
@@ -110,7 +110,7 @@ struct PatientHomeView: View {
 
                     nextUp
                     todayList
-                    actionButtons
+                    helpButton
                 }
                 .padding()
             }
@@ -203,7 +203,7 @@ struct PatientHomeView: View {
         }
     }
 
-    private var actionButtons: some View {
+    private var helpButton: some View {
         VStack(spacing: 12) {
             Button("I'm okay") {
                 appState.patientIsOkay()
@@ -213,7 +213,6 @@ struct PatientHomeView: View {
             Button("I need help") {
                 Task {
                     await appState.patientNeedsHelp(location: latestLocationEvent)
-                    showGuidance = true
                 }
             }
             .buttonStyle(PrimaryActionButtonStyle(color: .red))
@@ -237,8 +236,8 @@ struct PatientHomeView: View {
                 .font(.title2.bold())
                 .frame(maxWidth: .infinity, minHeight: 64)
                 .foregroundStyle(.white)
-                .background(Color.red)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .background(AppTheme.destructive)
+                .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.card))
         }
         .accessibilityLabel("Emergency button. Tap to alert your caregiver immediately.")
     }
