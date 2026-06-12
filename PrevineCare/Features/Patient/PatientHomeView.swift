@@ -205,11 +205,6 @@ struct PatientHomeView: View {
 
     private var actionButtons: some View {
         VStack(spacing: 12) {
-            Button("Estoy bien") {
-                appState.patientIsOkay()
-            }
-            .buttonStyle(PrimaryActionButtonStyle(color: AppTheme.support))
-
             Button("Necesito ayuda") {
                 Task {
                     await appState.patientNeedsHelp(location: latestLocationEvent)
@@ -217,15 +212,6 @@ struct PatientHomeView: View {
                 }
             }
             .buttonStyle(PrimaryActionButtonStyle(color: .red))
-
-            Button("Guía para volver") {
-                if appState.activeGuidanceSession?.status == .active {
-                    showGuidance = false
-                } else {
-                    showGuidance = true
-                }
-            }
-            .buttonStyle(PrimaryActionButtonStyle(color: AppTheme.primary))
         }
     }
 
