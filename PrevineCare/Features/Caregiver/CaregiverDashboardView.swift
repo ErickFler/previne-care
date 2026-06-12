@@ -51,7 +51,7 @@ struct CaregiverDashboardView: View {
                 Section("Today") {
                     ForEach(appState.todayReminders) { reminder in
                         ReminderRow(reminder: reminder) {
-                            appState.complete(reminder)
+                            appState.toggleReminder(reminder)
                         }
                     }
                 }

@@ -13,12 +13,12 @@ struct PatientGuidanceView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 22) {
-                Text("Tranquilo, te vamos a ayudar")
+                Text("Stay calm, we are going to help you")
                     .font(.system(size: 38, weight: .bold))
                     .multilineTextAlignment(.center)
                     .minimumScaleFactor(0.75)
 
-                Text("Quédate donde estás")
+                Text("Stay where you are")
                     .font(.title.bold())
                     .foregroundStyle(AppTheme.primary)
 
@@ -39,20 +39,20 @@ struct PatientGuidanceView: View {
                 .background(AppTheme.surface)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
 
-                Button("Estoy bien") {
+                Button("I'm okay") {
                     appState.patientIsOkay()
                     dismiss()
                 }
                 .buttonStyle(PrimaryActionButtonStyle(color: AppTheme.support))
 
-                Button("Necesito ayuda") {
+                Button("I need help") {
                     Task {
                         await appState.patientNeedsHelp(location: latestLocationEvent)
                     }
                 }
                 .buttonStyle(PrimaryActionButtonStyle(color: .red))
 
-                Button("Llamar a mi cuidador") {
+                Button("Call my caregiver") {
                     call(appState.caregiver.phone)
                 }
                 .buttonStyle(PrimaryActionButtonStyle(color: AppTheme.primary))
