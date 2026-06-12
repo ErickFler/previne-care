@@ -110,7 +110,6 @@ struct PatientHomeView: View {
 
                     nextUp
                     todayList
-                    helpButton
                 }
                 .padding()
             }
@@ -200,31 +199,6 @@ struct PatientHomeView: View {
                 }
                 Divider()
             }
-        }
-    }
-
-    private var helpButton: some View {
-        VStack(spacing: 12) {
-            Button("I'm okay") {
-                appState.patientIsOkay()
-            }
-            .buttonStyle(PrimaryActionButtonStyle(color: AppTheme.support))
-
-            Button("I need help") {
-                Task {
-                    await appState.patientNeedsHelp(location: latestLocationEvent)
-                }
-            }
-            .buttonStyle(PrimaryActionButtonStyle(color: .red))
-
-            Button("Guide me home") {
-                if appState.activeGuidanceSession?.status == .active {
-                    showGuidance = false
-                } else {
-                    showGuidance = true
-                }
-            }
-            .buttonStyle(PrimaryActionButtonStyle(color: AppTheme.primary))
         }
     }
 
