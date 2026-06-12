@@ -1,10 +1,99 @@
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#endif
+
+// MARK: - Panic Alert
+
+struct PanicAlertView: View {
+    @EnvironmentObject private var appState: CareAppState
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        VStack(spacing: 28) {
+            Spacer()
+
+            Image(systemName: "checkmark.shield.fill")
+                .font(.system(size: 90))
+                .foregroundStyle(.white)
+
+            VStack(spacing: 10) {
+                Text("Tu cuidador fue avisado")
+                    .font(.system(size: 32, weight: .bold))
+                    .foregroundStyle(.white)
+                    .multilineTextAlignment(.center)
+
+                Text("Quédate donde estás.\nAlguien viene a ayudarte.")
+                    .font(.title3)
+                    .foregroundStyle(.white.opacity(0.9))
+                    .multilineTextAlignment(.center)
+            }
+
+            Spacer()
+
+            VStack(spacing: 14) {
+                Button {
+                    callPhone(appState.caregiver.phone)
+                } label: {
+                    Label("Llamar a mi cuidador", systemImage: "phone.fill")
+                        .font(.title3.bold())
+                        .frame(maxWidth: .infinity, minHeight: 64)
+                        .foregroundStyle(.red)
+                        .background(.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+
+                if let emergencyPhone = appState.caregiver.emergencyPhone, !emergencyPhone.isEmpty {
+                    Button {
+                        callPhone(emergencyPhone)
+                    } label: {
+                        Label("Llamar emergencias", systemImage: "cross.fill")
+                            .font(.title3.bold())
+                            .frame(maxWidth: .infinity, minHeight: 64)
+                            .foregroundStyle(.white)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .strokeBorder(.white.opacity(0.6), lineWidth: 2)
+                            )
+                    }
+                }
+
+                Button("Ya estoy bien") {
+                    appState.patientIsOkay()
+                    dismiss()
+                }
+                .font(.headline)
+                .foregroundStyle(.white.opacity(0.75))
+                .padding(.top, 4)
+            }
+        }
+        .padding(28)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.red)
+        .ignoresSafeArea()
+    }
+
+    private func callPhone(_ phone: String?) {
+        #if canImport(UIKit)
+        guard
+            let phone,
+            !phone.isEmpty,
+            let url = URL(string: "tel://\(phone.filter(\.isNumber))")
+        else { return }
+        UIApplication.shared.open(url)
+        #endif
+    }
+}
+
+// MARK: - Patient Home
 
 struct PatientHomeView: View {
     @EnvironmentObject private var appState: CareAppState
     @EnvironmentObject private var locationService: LocationService
     @State private var showExitPIN = false
     @State private var showGuidance = false
+    @State private var showPanicConfirmation = false
+    @State private var showPanicAlert = false
 
     var body: some View {
         NavigationStack {
@@ -25,6 +114,12 @@ struct PatientHomeView: View {
                 }
                 .padding()
             }
+            .safeAreaInset(edge: .bottom) {
+                panicButton
+                    .padding(.horizontal)
+                    .padding(.vertical, 12)
+                    .background(.ultraThinMaterial)
+            }
             .background(AppTheme.background)
             .navigationTitle("Paciente")
             .toolbar {
@@ -42,6 +137,24 @@ struct PatientHomeView: View {
             }
             .sheet(isPresented: $showGuidance) {
                 PatientGuidanceView()
+            }
+            .fullScreenCover(isPresented: $showPanicAlert) {
+                PanicAlertView()
+            }
+            .confirmationDialog(
+                "¿Necesitas ayuda urgente?",
+                isPresented: $showPanicConfirmation,
+                titleVisibility: .visible
+            ) {
+                Button("Sí, avisar a mi cuidador", role: .destructive) {
+                    Task {
+                        await appState.patientPanic(location: latestLocationEvent)
+                        showPanicAlert = true
+                    }
+                }
+                Button("No, estoy bien", role: .cancel) {}
+            } message: {
+                Text("Tu cuidador recibirá una alerta de inmediato.")
             }
         }
     }
@@ -114,6 +227,20 @@ struct PatientHomeView: View {
             }
             .buttonStyle(PrimaryActionButtonStyle(color: AppTheme.primary))
         }
+    }
+
+    private var panicButton: some View {
+        Button {
+            showPanicConfirmation = true
+        } label: {
+            Label("EMERGENCIA", systemImage: "sos.circle.fill")
+                .font(.title2.bold())
+                .frame(maxWidth: .infinity, minHeight: 64)
+                .foregroundStyle(.white)
+                .background(Color.red)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+        .accessibilityLabel("Botón de emergencia. Toca para avisar a tu cuidador de inmediato.")
     }
 
     private var latestLocationEvent: LocationEvent? {
