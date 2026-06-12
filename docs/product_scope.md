@@ -12,6 +12,7 @@
 - Local risk evaluation based on location, time, reminder status, and patient response.
 - Local notifications.
 - A patient guidance screen for possible lost-patient situations.
+- Lost Mode demo with caregiver-selected destination, large compass arrow, local haptics, and short patient instructions.
 - On-device assistant interfaces backed by local rules and predefined messages.
 
 ## Excluded
@@ -26,6 +27,8 @@
 - Internet-required functionality.
 - Address search, exact street matching, and external geocoding for safe places.
 - Polygon or quadrant safe zones.
+- Automatic calls to authorities or real emergency dispatch.
+- Apple Watch Lost Mode.
 
 ## Future, Not Implemented Yet
 
@@ -34,3 +37,4 @@
 - HealthKit integration.
 - On-device model runtime integration when Apple platform support is appropriate.
 - Polygon or quadrant safe zones drawn on a map.
+- Secure cross-device synchronization for ActiveGuidanceSession.

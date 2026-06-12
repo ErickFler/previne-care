@@ -219,7 +219,11 @@ struct PatientHomeView: View {
             .buttonStyle(PrimaryActionButtonStyle(color: .red))
 
             Button("Guía para volver") {
-                showGuidance = true
+                if appState.activeGuidanceSession?.status == .active {
+                    showGuidance = false
+                } else {
+                    showGuidance = true
+                }
             }
             .buttonStyle(PrimaryActionButtonStyle(color: AppTheme.primary))
         }
