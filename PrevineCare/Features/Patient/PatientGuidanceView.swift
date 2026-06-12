@@ -45,13 +45,6 @@ struct PatientGuidanceView: View {
                 }
                 .buttonStyle(PrimaryActionButtonStyle(color: AppTheme.support))
 
-                Button("Necesito ayuda") {
-                    Task {
-                        await appState.patientNeedsHelp(location: latestLocationEvent)
-                    }
-                }
-                .buttonStyle(PrimaryActionButtonStyle(color: .red))
-
                 Button("Llamar a mi cuidador") {
                     call(appState.caregiver.phone)
                 }
