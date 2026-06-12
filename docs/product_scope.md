@@ -8,6 +8,7 @@
 - Daily reminders and routines.
 - "I am okay" and "I need help" patient actions.
 - Safe place management.
+- Safe place creation with current location, MapKit map selection, circular radius, and approximate block labels.
 - Local risk evaluation based on location, time, reminder status, and patient response.
 - Local notifications.
 - A patient guidance screen for possible lost-patient situations.
@@ -23,6 +24,8 @@
 - Cloud AI services.
 - Remote sensitive processing.
 - Internet-required functionality.
+- Address search, exact street matching, and external geocoding for safe places.
+- Polygon or quadrant safe zones.
 
 ## Future, Not Implemented Yet
 
@@ -30,3 +33,4 @@
 - Apple Watch companion target.
 - HealthKit integration.
 - On-device model runtime integration when Apple platform support is appropriate.
+- Polygon or quadrant safe zones drawn on a map.

@@ -59,9 +59,9 @@ public struct RiskEngine: Sendable {
         var reasons: [String] = []
 
         if let currentLocation = context.currentLocation {
-            let location = currentLocation.location
-            let containingPlaces = context.safePlaces.filter { place in
-                location.distance(from: place.coreLocation) <= place.radiusMeters
+            let coordinate = currentLocation.location.coordinate
+            let containingPlaces = context.safePlaces.filter {
+                isLocationInsideSafePlace(location: coordinate, safePlace: $0)
             }
 
             if context.safePlaces.isEmpty {
@@ -69,10 +69,23 @@ public struct RiskEngine: Sendable {
                 reasons.append("No safe places are configured.")
             } else if containingPlaces.isEmpty {
                 score += 35
-                reasons.append("Patient is outside all safe places.")
+                reasons.append("Outside all safe zones")
             } else if containingPlaces.allSatisfy({ !Self.isAllowedNow(place: $0, date: context.now) }) {
                 score += 20
                 reasons.append("Patient is at a known place outside the expected time.")
+            } else if let closestInsidePlace = containingPlaces.min(by: {
+                DirectionCalculator.distanceFromSafePlaceEdge(location: coordinate, safePlace: $0) <
+                    DirectionCalculator.distanceFromSafePlaceEdge(location: coordinate, safePlace: $1)
+            }) {
+                reasons.append("Inside safe place: \(closestInsidePlace.name)")
+                let distanceToEdge = DirectionCalculator.distanceFromSafePlaceEdge(
+                    location: coordinate,
+                    safePlace: closestInsidePlace
+                )
+                if distanceToEdge <= max(20, closestInsidePlace.radiusMeters * 0.2) {
+                    score += 15
+                    reasons.append("Near the edge of a safe zone")
+                }
             }
 
             if currentLocation.accuracy > 120 {

@@ -21,4 +21,19 @@ final class DirectionCalculatorTests: XCTestCase {
 
         XCTAssertEqual(nearest?.name, "Near")
     }
+
+    func testLocationInsideSafePlace() {
+        let origin = CLLocationCoordinate2D(latitude: 25.0, longitude: -100.0)
+        let home = SafePlace(name: "Home", latitude: 25.0, longitude: -100.0, radiusMeters: 100)
+
+        XCTAssertTrue(isLocationInsideSafePlace(location: origin, safePlace: home))
+    }
+
+    func testBlocksApproximationUsesCaregiverFriendlyLabels() {
+        XCTAssertEqual(blocksApproximation(for: 50), "Small area")
+        XCTAssertEqual(blocksApproximation(for: 100), "Around 1 block")
+        XCTAssertEqual(blocksApproximation(for: 200), "Around 2–3 blocks")
+        XCTAssertEqual(blocksApproximation(for: 500), "Neighborhood range")
+        XCTAssertEqual(blocksApproximation(for: 1000), "Large safe zone")
+    }
 }

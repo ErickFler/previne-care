@@ -22,6 +22,14 @@ Views call feature view models or local app state. Feature state calls services 
 
 The initial version has no HTTP client, backend SDK, public API dependency, or cloud AI integration. Real cross-device caregiver notifications will require a future secure sync layer, documented separately.
 
+## Safe Places
+
+Safe Places are evaluated on-device with CoreLocation distance calculations. The current MVP stores each safe zone as a circular area with a center coordinate and radius in meters. `SafeZoneShape` includes a future `polygon` case so map-drawn zones can be added later without changing the high-level domain model, but only circular zones are implemented now.
+
+Caregiver-facing "blocks" are approximate labels derived from radius size. They intentionally avoid claiming street-level precision because block length varies by city and neighborhood.
+
+Address search, exact street matching, and geocoding are outside the MVP because they would introduce network or external service dependencies. Caregivers can use current location or pick a point directly on the MapKit map.
+
 ## Apple Watch Preparation
 
 The domain models are value types and Codable where possible so they can later be shared with a Watch target. The patient actions are intentionally small commands: check in, request help, view next reminder, and show guidance.

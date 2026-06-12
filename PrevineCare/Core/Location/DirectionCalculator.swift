@@ -33,6 +33,37 @@ public struct DirectionCalculator: Sendable {
             distanceMeters(from: location, to: $0.coordinate) < distanceMeters(from: location, to: $1.coordinate)
         }
     }
+
+    public static func isLocationInsideSafePlace(location: CLLocationCoordinate2D, safePlace: SafePlace) -> Bool {
+        distanceMeters(from: location, to: safePlace.coordinate) <= safePlace.radiusMeters
+    }
+
+    public static func distanceFromSafePlaceEdge(location: CLLocationCoordinate2D, safePlace: SafePlace) -> CLLocationDistance {
+        safePlace.radiusMeters - distanceMeters(from: location, to: safePlace.coordinate)
+    }
+}
+
+public func blocksApproximation(for radiusMeters: Double) -> String {
+    switch radiusMeters {
+    case ..<75:
+        return "Small area"
+    case ..<130:
+        return "Around 1 block"
+    case ..<300:
+        return "Around 2–3 blocks"
+    case ..<750:
+        return "Neighborhood range"
+    default:
+        return "Large safe zone"
+    }
+}
+
+public func isLocationInsideSafePlace(location: CLLocationCoordinate2D, safePlace: SafePlace) -> Bool {
+    DirectionCalculator.isLocationInsideSafePlace(location: location, safePlace: safePlace)
+}
+
+public func nearestSafePlace(to location: CLLocationCoordinate2D, safePlaces: [SafePlace]) -> SafePlace? {
+    DirectionCalculator.nearestSafePlace(to: location, in: safePlaces)
 }
 
 private extension Double {

@@ -11,7 +11,29 @@ final class RiskEngineTests: XCTestCase {
         let result = RiskEngine().evaluate(context)
 
         XCTAssertEqual(result.riskLevel, .medium)
-        XCTAssertTrue(result.reasons.contains("Patient is outside all safe places."))
+        XCTAssertTrue(result.reasons.contains("Outside all safe zones"))
+    }
+
+    func testInsideSafePlaceKeepsRiskLow() {
+        let home = SafePlace(name: "Home", type: .home, latitude: 25.0, longitude: -100.0, radiusMeters: 200)
+        let event = LocationEvent(latitude: 25.0001, longitude: -100.0001, accuracy: 20)
+        let context = RiskAssessmentContext(currentLocation: event, safePlaces: [home])
+
+        let result = RiskEngine().evaluate(context)
+
+        XCTAssertEqual(result.riskLevel, .low)
+        XCTAssertTrue(result.reasons.contains("Inside safe place: Home"))
+    }
+
+    func testNearSafePlaceEdgeAddsWarning() {
+        let home = SafePlace(name: "Home", type: .home, latitude: 25.0, longitude: -100.0, radiusMeters: 100)
+        let event = LocationEvent(latitude: 25.0008, longitude: -100.0, accuracy: 20)
+        let context = RiskAssessmentContext(currentLocation: event, safePlaces: [home])
+
+        let result = RiskEngine().evaluate(context)
+
+        XCTAssertEqual(result.riskLevel, .low)
+        XCTAssertTrue(result.reasons.contains("Near the edge of a safe zone"))
     }
 
     func testCriticalUnconfirmedReminderRaisesRisk() {

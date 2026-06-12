@@ -113,16 +113,43 @@ public struct Reminder: Identifiable, Codable, Equatable, Sendable {
 
 public enum SafePlaceType: String, CaseIterable, Codable, Sendable {
     case home
-    case family
     case clinic
+    case pharmacy
+    case family
+    case park
+    case custom
     case dayCenter
     case other
+
+    public static var allCases: [SafePlaceType] {
+        [.home, .clinic, .pharmacy, .family, .park, .custom]
+    }
+
+    public var displayName: String {
+        switch self {
+        case .home: "Home"
+        case .clinic: "Clinic"
+        case .pharmacy: "Pharmacy"
+        case .family: "Family"
+        case .park: "Park"
+        case .custom: "Custom"
+        case .dayCenter: "Day Center"
+        case .other: "Custom"
+        }
+    }
+}
+
+public enum SafeZoneShape: String, Codable, Sendable {
+    case circle
+    case polygon
 }
 
 public struct SafePlace: Identifiable, Codable, Equatable, Sendable {
     public var id: UUID
     public var name: String
     public var type: SafePlaceType
+    // MVP safe zones are circular. Polygon support is reserved for future map-drawn zones.
+    public var shape: SafeZoneShape?
     public var latitude: Double
     public var longitude: Double
     public var radiusMeters: Double
@@ -133,7 +160,8 @@ public struct SafePlace: Identifiable, Codable, Equatable, Sendable {
     public init(
         id: UUID = UUID(),
         name: String,
-        type: SafePlaceType = .other,
+        type: SafePlaceType = .custom,
+        shape: SafeZoneShape? = .circle,
         latitude: Double,
         longitude: Double,
         radiusMeters: Double = 150,
@@ -144,6 +172,7 @@ public struct SafePlace: Identifiable, Codable, Equatable, Sendable {
         self.id = id
         self.name = name
         self.type = type
+        self.shape = shape
         self.latitude = latitude
         self.longitude = longitude
         self.radiusMeters = radiusMeters
