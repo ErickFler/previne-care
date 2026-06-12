@@ -78,7 +78,7 @@ struct CaregiverAlertView: View {
             }
 
             Section {
-                Button("Marcar como atendido") {
+                Button("Mark as attended") {
                     appState.markAlertResolved(event)
                     dismiss()
                 }
@@ -86,10 +86,10 @@ struct CaregiverAlertView: View {
                     appState.cancelActiveGuidanceSession()
                 }
                 .disabled(appState.activeGuidanceSession?.status != .active)
-                Button("Llamar al paciente") {
+                Button("Call patient") {
                     call(appState.caregiver.phone)
                 }
-                Button("Llamar a contacto de emergencia") {
+                Button("Call emergency contact") {
                     call(appState.caregiver.emergencyPhone)
                 }
                 .foregroundStyle(.red)

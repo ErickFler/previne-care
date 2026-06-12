@@ -66,8 +66,8 @@ public final class LocalNotificationService {
         guard await requestAuthorizationIfNeeded() else { return }
 
         let content = UNMutableNotificationContent()
-        content.title = "URGENTE: \(patientName) necesita ayuda"
-        content.body = "Presionó el botón de emergencia. Revísalo de inmediato."
+        content.title = "URGENT: \(patientName) needs help"
+        content.body = "They pressed the emergency button. Check on them immediately."
         content.sound = .default
 
         let request = UNNotificationRequest(

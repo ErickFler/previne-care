@@ -32,21 +32,21 @@ public struct CalmingGuidanceService: Sendable {
     public func message(for riskLevel: RiskLevel = .low) -> String {
         switch riskLevel {
         case .low:
-            return "Respira profundo conmigo."
+            return "Take a deep breath with me."
         case .medium:
-            return "Quédate donde estás. Tu cuidador será notificado."
+            return "Stay where you are. Your caregiver will be notified."
         case .high:
-            return "Tranquilo, te vamos a ayudar. Quédate en un lugar seguro."
+            return "Stay calm, we are going to help you. Stay in a safe place."
         }
     }
 
     public var allMessages: [String] {
         [
-            "Respira profundo conmigo.",
-            "Inhala lentamente.",
-            "Exhala despacio.",
-            "Quédate donde estás.",
-            "Tu cuidador será notificado."
+            "Take a deep breath with me.",
+            "Breathe in slowly.",
+            "Breathe out slowly.",
+            "Stay where you are.",
+            "Your caregiver will be notified."
         ]
     }
 }
@@ -56,10 +56,10 @@ public struct PatientPromptGenerator: Sendable {
 
     public func lostPatientPrompts() -> [String] {
         [
-            "Tranquilo, te vamos a ayudar.",
-            "Quédate donde estás.",
-            "Busca un lugar seguro y visible.",
-            "Presiona Necesito ayuda si no sabes dónde estás."
+            "Stay calm, we are going to help you.",
+            "Stay where you are.",
+            "Find a safe and visible place.",
+            "Press I need help if you don't know where you are."
         ]
     }
 }

@@ -6,7 +6,7 @@ final class CareAppState: ObservableObject {
         didSet { save() }
     }
 
-    @Published var patient = PatientProfile(name: "Javier", emergencyNotes: "Prefiere instrucciones cortas y calmadas.") {
+    @Published var patient = PatientProfile(name: "Javier", emergencyNotes: "Prefers short and calm instructions.") {
         didSet { save() }
     }
 
@@ -146,6 +146,11 @@ final class CareAppState: ObservableObject {
     func complete(_ reminder: Reminder) {
         setReminder(reminder, status: .completed, on: reminder.scheduleDate)
         lastPatientCheckIn = Date()
+    }
+
+    func toggleReminder(_ reminder: Reminder) {
+        let newStatus: ReminderStatus = reminder.status == .completed ? .pending : .completed
+        setReminder(reminder, status: newStatus, on: reminder.scheduleDate)
     }
 
     func setReminder(_ reminder: Reminder, status: ReminderStatus, on date: Date) {
