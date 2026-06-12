@@ -140,6 +140,18 @@ final class CareAppState: ObservableObject {
         await LocalNotificationService.shared.notifyCaregiver(riskEvent: event, patientName: patient.name)
     }
 
+    func patientPanic(location: LocationEvent?) async {
+        let event = RiskEvent(
+            patientID: patient.id,
+            riskScore: 100,
+            riskLevel: .high,
+            reasons: ["Patient pressed the emergency panic button."],
+            lastLocation: location
+        )
+        riskEvents.insert(event, at: 0)
+        await LocalNotificationService.shared.notifyPanic(patientName: patient.name)
+    }
+
     func evaluateRisk(currentLocation: LocationEvent?, recentLocations: [LocationEvent] = []) async {
         let context = RiskAssessmentContext(
             patient: patient,

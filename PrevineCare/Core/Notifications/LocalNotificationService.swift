@@ -62,6 +62,23 @@ public final class LocalNotificationService {
         try? await UNUserNotificationCenter.current().add(request)
     }
 
+    public func notifyPanic(patientName: String) async {
+        guard await requestAuthorizationIfNeeded() else { return }
+
+        let content = UNMutableNotificationContent()
+        content.title = "URGENTE: \(patientName) necesita ayuda"
+        content.body = "Presionó el botón de emergencia. Revísalo de inmediato."
+        content.sound = .default
+
+        let request = UNNotificationRequest(
+            identifier: "panic.\(UUID().uuidString)",
+            content: content,
+            trigger: UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
+        )
+
+        try? await UNUserNotificationCenter.current().add(request)
+    }
+
     public func cancelReminder(id: UUID) {
         let identifier = "reminder.\(id.uuidString)"
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [identifier])
