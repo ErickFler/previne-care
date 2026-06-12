@@ -6,6 +6,7 @@ struct SafePlacesView: View {
     @EnvironmentObject private var appState: CareAppState
     @EnvironmentObject private var locationService: LocationService
     @State private var showEditor = false
+    @State private var editingPlace: SafePlace?
 
     var body: some View {
         ScrollView {
@@ -23,6 +24,8 @@ struct SafePlacesView: View {
                 } else {
                     ForEach(appState.safePlaces) { place in
                         SafePlaceCard(place: place) {
+                            editingPlace = place
+                        } onDelete: {
                             appState.safePlaces.removeAll { $0.id == place.id }
                         }
                     }
@@ -33,8 +36,14 @@ struct SafePlacesView: View {
         .background(AppTheme.background)
         .navigationTitle("Safe Places")
         .sheet(isPresented: $showEditor) {
-            SafePlaceEditorView { newPlace in
-                appState.safePlaces.append(newPlace)
+            SafePlaceEditorView { place in
+                save(place)
+            }
+            .environmentObject(locationService)
+        }
+        .sheet(item: $editingPlace) { place in
+            SafePlaceEditorView(editingPlace: place) { updatedPlace in
+                save(updatedPlace)
             }
             .environmentObject(locationService)
         }
@@ -57,10 +66,19 @@ struct SafePlacesView: View {
         .background(AppTheme.surface)
         .clipShape(RoundedRectangle(cornerRadius: 8))
     }
+
+    private func save(_ place: SafePlace) {
+        if let index = appState.safePlaces.firstIndex(where: { $0.id == place.id }) {
+            appState.safePlaces[index] = place
+        } else {
+            appState.safePlaces.append(place)
+        }
+    }
 }
 
 private struct SafePlaceCard: View {
     let place: SafePlace
+    let onEdit: () -> Void
     let onDelete: () -> Void
 
     var body: some View {
@@ -82,6 +100,9 @@ private struct SafePlaceCard: View {
                 Spacer()
 
                 Menu {
+                    Button(action: onEdit) {
+                        Label("Edit", systemImage: "pencil")
+                    }
                     Button(role: .destructive, action: onDelete) {
                         Label("Delete", systemImage: "trash")
                     }
@@ -106,7 +127,8 @@ private struct SafePlaceCard: View {
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(AppTheme.surface)
-        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.card))
+        .onTapGesture(perform: onEdit)
     }
 
     private var iconName: String {
@@ -126,6 +148,7 @@ struct SafePlaceEditorView: View {
     @Environment(\.dismiss) private var dismiss
 
     let onSave: (SafePlace) -> Void
+    private let editingPlace: SafePlace?
 
     @State private var name = ""
     @State private var type: SafePlaceType = .home
@@ -135,6 +158,15 @@ struct SafePlaceEditorView: View {
     @State private var waitingForCurrentLocation = false
     @State private var debugLatitude = ""
     @State private var debugLongitude = ""
+
+    init(editingPlace: SafePlace? = nil, onSave: @escaping (SafePlace) -> Void) {
+        self.editingPlace = editingPlace
+        self.onSave = onSave
+        _name = State(initialValue: editingPlace?.name ?? "")
+        _type = State(initialValue: editingPlace?.type ?? .home)
+        _selectedCoordinate = State(initialValue: editingPlace?.coordinate)
+        _radiusMeters = State(initialValue: editingPlace?.radiusMeters ?? 150)
+    }
 
     var body: some View {
         NavigationStack {
@@ -188,7 +220,7 @@ struct SafePlaceEditorView: View {
                     }
                 }
             }
-            .navigationTitle("Add safe place")
+            .navigationTitle(editingPlace == nil ? "Add safe place" : "Edit safe place")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
@@ -282,6 +314,7 @@ struct SafePlaceEditorView: View {
         guard let selectedCoordinate else { return }
         onSave(
             SafePlace(
+                id: editingPlace?.id ?? UUID(),
                 name: name.trimmingCharacters(in: .whitespacesAndNewlines),
                 type: type,
                 shape: .circle,

@@ -6,11 +6,11 @@ The original Previne Playground contains useful pieces but also broader app flow
 
 - Patient profile.
 - Caregiver profile.
-- Reminder list and daily completion.
+- Reminder list, editing, recurrence, occurrence completion, and calendar.
 - Caregiver dashboard.
 - Patient dashboard.
 - Caregiver PIN gate for patient mode.
-- Safe places.
+- Safe places with create/edit/delete and MapKit selection.
 - Local notification manager.
 - CoreLocation manager.
 
@@ -27,4 +27,11 @@ The original Previne Playground contains useful pieces but also broader app flow
 - Risk logic is now explicit and isolated in `RiskEngine`.
 - Lost-patient detection is a first-class local rule service.
 - On-device AI is represented by protocols and local responses, not by external APIs.
-- Tests cover risk and direction calculations.
+- Help/Lost Mode state is explicit and does not activate from demo seed data.
+- Tests cover risk, direction, safe-place checks, and reminder recurrence.
+
+## Pending Migration Work
+
+- Replace the MVP local JSON persistence with SwiftData if the app needs richer queries or multi-device sync.
+- Add secure caregiver/patient synchronization for `ActiveGuidanceSession`.
+- Expand reminder occurrence history if long-term analytics are needed.

@@ -24,6 +24,10 @@ final class CareAppState: ObservableObject {
         didSet { save() }
     }
 
+    @Published var reminderOccurrences: [ReminderOccurrence] = [] {
+        didSet { save() }
+    }
+
     @Published var safePlaces: [SafePlace] = [] {
         didSet { save() }
     }
@@ -40,6 +44,10 @@ final class CareAppState: ObservableObject {
         didSet { save() }
     }
 
+    @Published var helpModeState: HelpModeState = .normal {
+        didSet { save() }
+    }
+
     private let riskEngine = RiskEngine()
     private let lostDetector = LostPatientDetector()
     private let storageKey = "previnecare.app-state.v1"
@@ -50,11 +58,13 @@ final class CareAppState: ObservableObject {
             patient = snapshotPatient
             caregiver = snapshot.caregiver
             reminders = snapshot.reminders
+            reminderOccurrences = snapshot.reminderOccurrences
             safePlaces = snapshot.safePlaces
             riskEvents = snapshot.riskEvents
             lastPatientCheckIn = snapshot.lastPatientCheckIn
             activeMode = snapshot.activeMode
             activeGuidanceSession = snapshot.activeGuidanceSession
+            helpModeState = snapshot.helpModeState
         }
     }
 
@@ -67,11 +77,21 @@ final class CareAppState: ObservableObject {
     }
 
     var todayReminders: [Reminder] {
-        reminders.sorted { $0.scheduleDate < $1.scheduleDate }
+        remindersForDate(Date()).map(\.reminder)
     }
 
     var nextReminder: Reminder? {
         todayReminders.first { $0.status == .pending }
+    }
+
+    func remindersForDate(_ date: Date) -> [ReminderDayItem] {
+        let service = ReminderScheduleService()
+        return service.occurrences(on: date, reminders: reminders).compactMap { generated in
+            guard let reminder = reminders.first(where: { $0.id == generated.reminderId }) else { return nil }
+            let occurrence = storedOccurrence(for: reminder.id, on: generated.occurrenceDate) ?? generated
+            return ReminderDayItem(reminder: reminder, occurrence: occurrence)
+        }
+        .sorted { $0.occurrence.occurrenceDate < $1.occurrence.occurrenceDate }
     }
 
     func seedDemoIfNeeded() {
@@ -124,22 +144,56 @@ final class CareAppState: ObservableObject {
     }
 
     func complete(_ reminder: Reminder) {
-        guard let index = reminders.firstIndex(where: { $0.id == reminder.id }) else { return }
-        reminders[index].status = .completed
+        setReminder(reminder, status: .completed, on: reminder.scheduleDate)
         lastPatientCheckIn = Date()
+    }
+
+    func setReminder(_ reminder: Reminder, status: ReminderStatus, on date: Date) {
+        let occurrenceDate = occurrenceDate(for: reminder, on: date)
+        if let index = reminderOccurrences.firstIndex(where: { $0.reminderId == reminder.id && Calendar.current.isDate($0.occurrenceDate, inSameDayAs: occurrenceDate) }) {
+            reminderOccurrences[index].status = status
+            reminderOccurrences[index].completedAt = status == .completed ? Date() : nil
+        } else {
+            reminderOccurrences.append(
+                ReminderOccurrence(
+                    reminderId: reminder.id,
+                    occurrenceDate: occurrenceDate,
+                    status: status,
+                    completedAt: status == .completed ? Date() : nil
+                )
+            )
+        }
+    }
+
+    func saveReminder(_ reminder: Reminder) {
+        if let index = reminders.firstIndex(where: { $0.id == reminder.id }) {
+            reminders[index] = reminder
+        } else {
+            reminders.append(reminder)
+        }
+    }
+
+    func deleteReminder(_ reminder: Reminder) {
+        reminders.removeAll { $0.id == reminder.id }
+        reminderOccurrences.removeAll { $0.reminderId == reminder.id }
     }
 
     func patientIsOkay() {
         lastPatientCheckIn = Date()
+        resolveOpenRiskEvents()
         completeActiveGuidanceSession()
+        helpModeState = .normal
+        activeGuidanceSession = nil
     }
 
     func patientNeedsHelp(location: LocationEvent?) async {
+        helpModeState = .waitingForCaregiverDestination
+        activeMode = .patient
         let event = RiskEvent(
             patientID: patient.id,
             riskScore: 90,
             riskLevel: .high,
-            reasons: ["Patient pressed Need help."],
+            reasons: ["Patient pressed Need help.", "Possible lost state"],
             lastLocation: location
         )
         riskEvents.insert(event, at: 0)
@@ -166,6 +220,7 @@ final class CareAppState: ObservableObject {
             destinationLatitude: safePlace.latitude,
             destinationLongitude: safePlace.longitude
         )
+        helpModeState = .guidanceActive
         activeMode = .patient
     }
 
@@ -186,6 +241,7 @@ final class CareAppState: ObservableObject {
 
     func markGuidanceSignalLost() async {
         updateGuidanceStatus(.failed)
+        helpModeState = .helpRequested
         let event = RiskEvent(
             patientID: patient.id,
             riskScore: 70,
@@ -239,6 +295,31 @@ final class CareAppState: ObservableObject {
         guard var session = activeGuidanceSession else { return }
         session.status = status
         activeGuidanceSession = session
+        if status == .cancelled || status == .completed {
+            helpModeState = status == .completed ? .resolved : .helpRequested
+        }
+    }
+
+    private func storedOccurrence(for reminderId: UUID, on date: Date) -> ReminderOccurrence? {
+        reminderOccurrences.first {
+            $0.reminderId == reminderId && Calendar.current.isDate($0.occurrenceDate, inSameDayAs: date)
+        }
+    }
+
+    private func occurrenceDate(for reminder: Reminder, on date: Date) -> Date {
+        let time = Calendar.current.dateComponents([.hour, .minute, .second], from: reminder.scheduleDate)
+        return Calendar.current.date(
+            bySettingHour: time.hour ?? 0,
+            minute: time.minute ?? 0,
+            second: time.second ?? 0,
+            of: date
+        ) ?? date
+    }
+
+    private func resolveOpenRiskEvents() {
+        for index in riskEvents.indices where riskEvents[index].status == .open {
+            riskEvents[index].status = .resolved
+        }
     }
 
     private func save() {
@@ -246,13 +327,24 @@ final class CareAppState: ObservableObject {
             patient: patient,
             caregiver: caregiver,
             reminders: reminders,
+            reminderOccurrences: reminderOccurrences,
             safePlaces: safePlaces,
             riskEvents: riskEvents,
             lastPatientCheckIn: lastPatientCheckIn,
             activeMode: activeMode,
-            activeGuidanceSession: activeGuidanceSession
+            activeGuidanceSession: activeGuidanceSession,
+            helpModeState: helpModeState
         )
         LocalJSONStore.save(snapshot, key: storageKey)
+    }
+}
+
+struct ReminderDayItem: Identifiable, Equatable {
+    let reminder: Reminder
+    let occurrence: ReminderOccurrence
+
+    var id: String {
+        "\(reminder.id.uuidString).\(Int(occurrence.occurrenceDate.timeIntervalSince1970))"
     }
 }
 
@@ -260,30 +352,36 @@ private struct AppSnapshot: Codable {
     var patient: PatientProfile?
     var caregiver: CaregiverProfile
     var reminders: [Reminder]
+    var reminderOccurrences: [ReminderOccurrence]
     var safePlaces: [SafePlace]
     var riskEvents: [RiskEvent]
     var lastPatientCheckIn: Date?
     var activeMode: CareMode
     var activeGuidanceSession: ActiveGuidanceSession?
+    var helpModeState: HelpModeState
 
     init(
         patient: PatientProfile?,
         caregiver: CaregiverProfile,
         reminders: [Reminder],
+        reminderOccurrences: [ReminderOccurrence],
         safePlaces: [SafePlace],
         riskEvents: [RiskEvent],
         lastPatientCheckIn: Date?,
         activeMode: CareMode,
-        activeGuidanceSession: ActiveGuidanceSession?
+        activeGuidanceSession: ActiveGuidanceSession?,
+        helpModeState: HelpModeState = .normal
     ) {
         self.patient = patient
         self.caregiver = caregiver
         self.reminders = reminders
+        self.reminderOccurrences = reminderOccurrences
         self.safePlaces = safePlaces
         self.riskEvents = riskEvents
         self.lastPatientCheckIn = lastPatientCheckIn
         self.activeMode = activeMode
         self.activeGuidanceSession = activeGuidanceSession
+        self.helpModeState = helpModeState
     }
 
     init(from decoder: Decoder) throws {
@@ -291,21 +389,25 @@ private struct AppSnapshot: Codable {
         patient = try container.decodeIfPresent(PatientProfile.self, forKey: .patient)
         caregiver = try container.decode(CaregiverProfile.self, forKey: .caregiver)
         reminders = try container.decode([Reminder].self, forKey: .reminders)
+        reminderOccurrences = try container.decodeIfPresent([ReminderOccurrence].self, forKey: .reminderOccurrences) ?? []
         safePlaces = try container.decode([SafePlace].self, forKey: .safePlaces)
         riskEvents = try container.decode([RiskEvent].self, forKey: .riskEvents)
         lastPatientCheckIn = try container.decodeIfPresent(Date.self, forKey: .lastPatientCheckIn)
         activeMode = try container.decode(CareMode.self, forKey: .activeMode)
         activeGuidanceSession = try container.decodeIfPresent(ActiveGuidanceSession.self, forKey: .activeGuidanceSession)
+        helpModeState = try container.decodeIfPresent(HelpModeState.self, forKey: .helpModeState) ?? .normal
     }
 
     static let empty = AppSnapshot(
         patient: nil,
         caregiver: CaregiverProfile(),
         reminders: [],
+        reminderOccurrences: [],
         safePlaces: [],
         riskEvents: [],
         lastPatientCheckIn: nil,
         activeMode: .caregiver,
-        activeGuidanceSession: nil
+        activeGuidanceSession: nil,
+        helpModeState: .normal
     )
 }

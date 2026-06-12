@@ -5,9 +5,10 @@
 - Caregiver mode for setup, review, reminders, safe places, and alerts.
 - Patient mode with a simple next-action interface.
 - Caregiver PIN to exit patient mode or edit sensitive settings.
-- Daily reminders and routines.
+- Editable reminders and routines with one-time, daily, weekly, monthly, and selected-weekday recurrence.
+- Simple reminder calendar for past, current, and future days.
 - "I am okay" and "I need help" patient actions.
-- Safe place management.
+- Safe place management with create, edit, and delete.
 - Safe place creation with current location, MapKit map selection, circular radius, and approximate block labels.
 - Local risk evaluation based on location, time, reminder status, and patient response.
 - Local notifications.
@@ -38,3 +39,4 @@
 - On-device model runtime integration when Apple platform support is appropriate.
 - Polygon or quadrant safe zones drawn on a map.
 - Secure cross-device synchronization for ActiveGuidanceSession.
+- Migration from JSON/UserDefaults-style local storage to SwiftData when persistence needs grow.

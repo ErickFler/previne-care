@@ -14,7 +14,7 @@ struct AppRouter: View {
             case .caregiver:
                 CaregiverDashboardView()
             case .patient:
-                if appState.activeGuidanceSession?.status == .active || appState.activeGuidanceSession?.status == .failed {
+                if appState.helpModeState != .normal && appState.helpModeState != .resolved {
                     PatientLostModeView()
                 } else {
                     PatientHomeView()

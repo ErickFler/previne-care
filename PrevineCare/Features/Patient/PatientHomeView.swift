@@ -38,25 +38,14 @@ struct PanicAlertView: View {
                     Label("Llamar a mi cuidador", systemImage: "phone.fill")
                         .font(.title3.bold())
                         .frame(maxWidth: .infinity, minHeight: 64)
-                        .foregroundStyle(.red)
+                        .foregroundStyle(AppTheme.destructive)
                         .background(.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.card))
                 }
 
-                if let emergencyPhone = appState.caregiver.emergencyPhone, !emergencyPhone.isEmpty {
-                    Button {
-                        callPhone(emergencyPhone)
-                    } label: {
-                        Label("Llamar emergencias", systemImage: "cross.fill")
-                            .font(.title3.bold())
-                            .frame(maxWidth: .infinity, minHeight: 64)
-                            .foregroundStyle(.white)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .strokeBorder(.white.opacity(0.6), lineWidth: 2)
-                            )
-                    }
-                }
+                Text("Emergency demo action")
+                    .font(.caption.bold())
+                    .foregroundStyle(.white.opacity(0.75))
 
                 Button("Ya estoy bien") {
                     appState.patientIsOkay()
@@ -69,7 +58,7 @@ struct PanicAlertView: View {
         }
         .padding(28)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.red)
+        .background(AppTheme.destructive)
         .ignoresSafeArea()
     }
 
@@ -110,7 +99,7 @@ struct PatientHomeView: View {
 
                     nextUp
                     todayList
-                    actionButtons
+                    helpButton
                 }
                 .padding()
             }
@@ -203,29 +192,14 @@ struct PatientHomeView: View {
         }
     }
 
-    private var actionButtons: some View {
+    private var helpButton: some View {
         VStack(spacing: 12) {
-            Button("Estoy bien") {
-                appState.patientIsOkay()
-            }
-            .buttonStyle(PrimaryActionButtonStyle(color: AppTheme.support))
-
             Button("Necesito ayuda") {
                 Task {
                     await appState.patientNeedsHelp(location: latestLocationEvent)
-                    showGuidance = true
                 }
             }
             .buttonStyle(PrimaryActionButtonStyle(color: .red))
-
-            Button("Guía para volver") {
-                if appState.activeGuidanceSession?.status == .active {
-                    showGuidance = false
-                } else {
-                    showGuidance = true
-                }
-            }
-            .buttonStyle(PrimaryActionButtonStyle(color: AppTheme.primary))
         }
     }
 
@@ -237,8 +211,8 @@ struct PatientHomeView: View {
                 .font(.title2.bold())
                 .frame(maxWidth: .infinity, minHeight: 64)
                 .foregroundStyle(.white)
-                .background(Color.red)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .background(AppTheme.destructive)
+                .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.card))
         }
         .accessibilityLabel("Botón de emergencia. Toca para avisar a tu cuidador de inmediato.")
     }

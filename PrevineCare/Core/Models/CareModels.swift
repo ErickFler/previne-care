@@ -77,6 +77,46 @@ public enum ReminderStatus: String, CaseIterable, Codable, Sendable {
     case skipped
 }
 
+public enum RecurrenceFrequency: String, CaseIterable, Codable, Sendable {
+    case none
+    case daily
+    case weekly
+    case monthly
+    case customDaysOfWeek
+
+    public var displayName: String {
+        switch self {
+        case .none: "One time"
+        case .daily: "Daily"
+        case .weekly: "Weekly"
+        case .monthly: "Monthly"
+        case .customDaysOfWeek: "Specific weekdays"
+        }
+    }
+}
+
+public struct RecurrenceRule: Codable, Equatable, Sendable {
+    public var frequency: RecurrenceFrequency
+    public var interval: Int
+    public var selectedWeekdays: Set<Int>
+    public var startDate: Date
+    public var endDate: Date?
+
+    public init(
+        frequency: RecurrenceFrequency = .none,
+        interval: Int = 1,
+        selectedWeekdays: Set<Int> = [],
+        startDate: Date = Date(),
+        endDate: Date? = nil
+    ) {
+        self.frequency = frequency
+        self.interval = max(1, interval)
+        self.selectedWeekdays = selectedWeekdays
+        self.startDate = startDate
+        self.endDate = endDate
+    }
+}
+
 public struct Reminder: Identifiable, Codable, Equatable, Sendable {
     public var id: UUID
     public var title: String
@@ -87,6 +127,7 @@ public struct Reminder: Identifiable, Codable, Equatable, Sendable {
     public var requiresConfirmation: Bool
     public var status: ReminderStatus
     public var isCritical: Bool
+    public var recurrenceRule: RecurrenceRule?
 
     public init(
         id: UUID = UUID(),
@@ -97,7 +138,8 @@ public struct Reminder: Identifiable, Codable, Equatable, Sendable {
         instructions: String = "",
         requiresConfirmation: Bool = true,
         status: ReminderStatus = .pending,
-        isCritical: Bool = false
+        isCritical: Bool = false,
+        recurrenceRule: RecurrenceRule? = nil
     ) {
         self.id = id
         self.title = title
@@ -108,6 +150,36 @@ public struct Reminder: Identifiable, Codable, Equatable, Sendable {
         self.requiresConfirmation = requiresConfirmation
         self.status = status
         self.isCritical = isCritical
+        self.recurrenceRule = recurrenceRule
+    }
+
+    public var effectiveRecurrenceRule: RecurrenceRule {
+        if let recurrenceRule {
+            return recurrenceRule
+        }
+        return RecurrenceRule(frequency: repeats ? .daily : .none, startDate: scheduleDate)
+    }
+}
+
+public struct ReminderOccurrence: Identifiable, Codable, Equatable, Sendable {
+    public var id: UUID
+    public var reminderId: UUID
+    public var occurrenceDate: Date
+    public var status: ReminderStatus
+    public var completedAt: Date?
+
+    public init(
+        id: UUID = UUID(),
+        reminderId: UUID,
+        occurrenceDate: Date,
+        status: ReminderStatus = .pending,
+        completedAt: Date? = nil
+    ) {
+        self.id = id
+        self.reminderId = reminderId
+        self.occurrenceDate = occurrenceDate
+        self.status = status
+        self.completedAt = completedAt
     }
 }
 
@@ -282,6 +354,14 @@ public enum GuidanceSessionStatus: String, Codable, Sendable {
     case completed
     case cancelled
     case failed
+}
+
+public enum HelpModeState: String, Codable, Sendable {
+    case normal
+    case helpRequested
+    case waitingForCaregiverDestination
+    case guidanceActive
+    case resolved
 }
 
 public struct ActiveGuidanceSession: Identifiable, Codable, Equatable, Sendable {
